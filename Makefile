@@ -16,24 +16,19 @@ unzip60: unzip60.tar.gz
 unzip60.tar.gz:
 	wget https://downloads.sourceforge.net/infozip/unzip60.tar.gz
 
-clean: cleannodl cleanappdir
+clean: cleannodl 
 	rm unzip60.tar.gz
-cleannodl: cleanappdirnodl
+	@pushd AppDir && make clean && popd
+cleannodl:
 	@# Clean without deleting any downloaded files
 	rm -r unzip60 src/unzip
 	rm src/App.zip
 	rm -r .zig-cache zig-out
 	rm app
-cleanappdir: cleanappdirnodl
-	rm AppDir/sh
-cleanappdirnodl:
-	rm AppDir/usr/bin/main
-	rm AppDir/usr/lib/libc.so.6 AppDir/usr/lib64/ld-linux-x86-64.so.2
-	rm -r AppDir/usr
 
-test: zig-out/bin/app
+test: app
 	LD_DEBUG=libs ./zig-out/bin/app
-test-chroot: zig-out/bin/app
+test-chroot: app
 	mkdir test-chroot
 	mkdir test-chroot/tmp
 	cp zig-out/bin/app test-chroot
