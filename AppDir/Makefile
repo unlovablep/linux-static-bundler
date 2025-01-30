@@ -1,10 +1,11 @@
 LIBS=usr/lib/libc.so.6 usr/lib64/ld-linux-x86-64.so.2
 
-../App.zip: sh $(LIBS) usr/bin/main
+../App.zip: sh all_libs usr/bin/main
 	chmod +x AppRun
 	zip -9 -r ../src/App.zip ./
+all_libs: $(LIBS)
+	mkdir -p usr/lib usr/lib64
 $(LIBS):
-	mkdir -p usr/lib usr/lib64 || true
 	cp "/$@" "$@"
 usr/bin/main:
 	mkdir -p usr/bin
