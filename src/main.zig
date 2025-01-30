@@ -10,7 +10,7 @@ pub fn main() !void {
     const a = arena.allocator();
 
     // Create tmpdir
-    const tmpdir_name = try std.fmt.allocPrintZ(a, "/tmp/foo_XXXXXX", .{});
+    const tmpdir_name = try std.fmt.allocPrintZ(a, "/tmp/bundle_XXXXXX", .{});
     defer a.free(tmpdir_name);
 
     const tmpdir = c.mkdtemp(tmpdir_name);
