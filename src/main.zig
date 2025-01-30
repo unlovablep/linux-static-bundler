@@ -50,10 +50,14 @@ pub fn main() !void {
     try cmd.spawn();
     _ = try cmd.wait();
 
-    // Set our environment variable
+    // Set our environment variables
     const env = try std.fmt.allocPrintZ(a, "APPDIR={s}/AppDir/", .{tmpdir_real});
     defer a.free(env);
     _ = c.putenv(env);
+
+    const envpwd = try std.fmt.allocPrintZ(a, "TOPDIR={s}/", .{pwd});
+    defer a.free(envpwd);
+    _ = c.putenv(envpwd);
 
     // Execute our AppRun
     var apprun = std.process.Child.init(&[_][]const u8{"./AppRun"}, a);
