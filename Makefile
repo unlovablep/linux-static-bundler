@@ -3,7 +3,7 @@ app: zig-out/bin/app
 zig-out/bin/app: src/App.zip src/unzip
 	zig build
 
-src/App.zip: AppDir/sh $(APPDIR_LIBS) AppDir/usr/bin/main
+src/App.zip:
 	@pushd AppDir && make && popd
 
 src/unzip: unzip60
