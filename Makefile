@@ -6,9 +6,11 @@ zig-out/bin/app: src/App.zip src/unzip
 	zig build
 
 $(APPDIR_LIBS):
+	mkdir -p AppDir/usr/lib AppDir/usr/lib64
 	cp /usr/lib/libc.so.6 AppDir/usr/lib/libc.so.6
 	cp /usr/lib64/ld-linux-x86-64.so.2 AppDir/usr/lib64/ld-linux-x86-64.so.2
 AppDir/usr/bin/main:
+	mkdir -p AppDir/usr/bin
 	gcc -o AppDir/usr/bin/main AppDir/src/main.c
 AppDir/sh:
 	wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox_ASH
@@ -40,6 +42,7 @@ cleanappdir: cleanappdirnodl
 cleanappdirnodl:
 	rm AppDir/usr/bin/main
 	rm AppDir/usr/lib/libc.so.6 AppDir/usr/lib64/ld-linux-x86-64.so.2
+	rm -r AppDir/usr
 
 test: zig-out/bin/app
 	LD_DEBUG=libs ./zig-out/bin/app
