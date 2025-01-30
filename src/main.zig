@@ -9,6 +9,9 @@ pub fn main() !void {
     defer arena.deinit();
     const a = arena.allocator();
 
+    const pwd = try std.fs.cwd().realpathAlloc(a, "./");
+    defer a.free(pwd);
+
     // Create tmpdir
     const tmpdir_name = try std.fmt.allocPrintZ(a, "/tmp/bundle_XXXXXX", .{});
     defer a.free(tmpdir_name);
@@ -58,6 +61,36 @@ pub fn main() !void {
     const envpwd = try std.fmt.allocPrintZ(a, "TOPDIR={s}/", .{pwd});
     defer a.free(envpwd);
     _ = c.putenv(envpwd);
+
+    // set $ARGS
+    const args = try std.process.argsAlloc(a);
+    defer std.process.argsFree(a, args);
+
+    var buf = std.ArrayList(u8).init(a);
+    defer buf.deinit();
+
+    var firstarg: [:0]u8 = undefined;
+    defer a.free(firstarg);
+    var first: bool = false;
+    for (args) |arg| {
+        if (!first) {
+            first = true;
+            // $SELF is for argv[0]
+            firstarg = try std.fmt.allocPrintZ(a, "SELF={s}", .{arg[0..arg.len]});
+        } else {
+            const str = try std.fmt.allocPrintZ(a, "{s} ", .{arg});
+            defer a.free(str);
+            try buf.appendSlice(str);
+        }
+    }
+    _ = c.putenv(firstarg);
+
+    const argslice = try buf.toOwnedSlice();
+    defer a.free(argslice);
+
+    const envargs = try std.fmt.allocPrintZ(a, "ARGS={s}", .{argslice});
+    defer a.free(envargs);
+    _ = c.putenv(envargs);
 
     // Execute our AppRun
     var apprun = std.process.Child.init(&[_][]const u8{"./AppRun"}, a);
