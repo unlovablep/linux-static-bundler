@@ -7,4 +7,6 @@ Bundles a zip file into a statically linked executable, which when run will get 
 
 Modify `AppDir/Makefile` to suit your needs, all files to be built into the final zip should be contained in `AppDir` and your entrypoint program should be run by `AppRun`. The example `AppRun` shows how to run a dynamic executable using the shared libraries bundled inside your `AppDir`. The temporary directory is exposed to `AppRun` as the environment variable `$APPDIR`.
 
+Instead of bothering to learn to use libzip, I bundled a statically linked `unzip` in the executable. This will be changed in the future.
+
 I wouldn't trust my own code with root permissions, so you shouldn't either.
