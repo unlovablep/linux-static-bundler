@@ -14,3 +14,9 @@ sh:
 	wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox_ASH
 	mv busybox_ASH sh
 	chmod +x sh
+
+clean: 
+	rm sh
+	rm usr/bin/main
+	rm usr/lib/libc.so.6 usr/lib64/ld-linux-x86-64.so.2
+	rm -r usr
