@@ -17,6 +17,7 @@ AppDir/sh:
 	mv busybox_ASH AppDir/sh
 	chmod +x AppDir/sh
 src/App.zip: AppDir/sh $(APPDIR_LIBS) AppDir/usr/bin/main
+	chmod +x AppDir/AppRun
 	@pushd AppDir/ && zip -9 -r ../src/App.zip ./ && popd
 
 src/unzip: unzip60
