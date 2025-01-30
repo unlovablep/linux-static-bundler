@@ -1,0 +1,4 @@
+#!./sh
+#echo "Appdir is: $APPDIR"
+export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
+exec "$APPDIR/usr/lib64/ld-linux-x86-64.so.2" --library-path "$APPDIR/usr/lib" "$APPDIR/usr/bin/main" "$@"
