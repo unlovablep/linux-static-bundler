@@ -3,7 +3,7 @@ LIBDIRS=usr/lib usr/lib64
 
 ../App.zip: sh $(LIBS) usr/bin/main
 	chmod +x AppRun
-	zip -9 -r ../src/App.zip ./
+	zip -9 -r ../src/App.zip ./ -x "src/*" "Makefile"
 $(LIBDIRS):
 	mkdir -p "$@"
 $(LIBS): $(LIBDIRS)
