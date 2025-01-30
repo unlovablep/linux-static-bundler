@@ -1,24 +1,10 @@
-APPDIR_LIBS=AppDir/usr/lib/libc.so.6 AppDir/usr/lib64/ld-linux-x86-64.so.2
-
 app: zig-out/bin/app
 	cp zig-out/bin/app app
 zig-out/bin/app: src/App.zip src/unzip
 	zig build
 
-$(APPDIR_LIBS):
-	mkdir -p AppDir/usr/lib AppDir/usr/lib64
-	cp /usr/lib/libc.so.6 AppDir/usr/lib/libc.so.6
-	cp /usr/lib64/ld-linux-x86-64.so.2 AppDir/usr/lib64/ld-linux-x86-64.so.2
-AppDir/usr/bin/main:
-	mkdir -p AppDir/usr/bin
-	gcc -o AppDir/usr/bin/main AppDir/src/main.c
-AppDir/sh:
-	wget https://busybox.net/downloads/binaries/1.35.0-x86_64-linux-musl/busybox_ASH
-	mv busybox_ASH AppDir/sh
-	chmod +x AppDir/sh
 src/App.zip: AppDir/sh $(APPDIR_LIBS) AppDir/usr/bin/main
-	chmod +x AppDir/AppRun
-	@pushd AppDir/ && zip -9 -r ../src/App.zip ./ && popd
+	@pushd AppDir && make && popd
 
 src/unzip: unzip60
 	@# Make it static:
