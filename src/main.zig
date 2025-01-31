@@ -1,8 +1,7 @@
 const std = @import("std");
 const c = @cImport(@cInclude("stdlib.h"));
 
-const zipfile = @embedFile("./App.zip");
-const unzip = @embedFile("./unzip");
+const tarfile = @embedFile("./App.txz");
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -27,19 +26,6 @@ pub fn main() !void {
 
     try tmpdir_handle.setAsCwd();
 
-    // Write out our zip file
-    const file = try std.fs.cwd().createFile("App.zip", .{});
-    try file.writeAll(zipfile);
-    file.close(); // cant defer
-
-    // Write out unzip
-    const unzipfile = try std.fs.cwd().createFile("unzip", .{});
-    try unzipfile.writeAll(unzip);
-    unzipfile.close(); // cant defer
-
-    // Make unzip executable
-    _ = std.c.chmod("./unzip", 755);
-
     // Create and change to AppDir
     try std.fs.cwd().makeDir("./AppDir");
 
@@ -48,10 +34,8 @@ pub fn main() !void {
 
     try appdir_handle.setAsCwd();
 
-    // Unzip our executable with unzip
-    var cmd = std.process.Child.init(&[_][]const u8{ "../unzip", "-qq", "../App.zip" }, a);
-    try cmd.spawn();
-    _ = try cmd.wait();
+    // Untar our executable
+    try txz(a, tarfile, "./");
 
     // Set our environment variables
     const env = try std.fmt.allocPrintZ(a, "APPDIR={s}/AppDir/", .{tmpdir_real});
@@ -92,6 +76,9 @@ pub fn main() !void {
     defer a.free(envargs);
     _ = c.putenv(envargs);
 
+    // Make everything executable
+    try recurse_chmod(a, c.strtoul("0755", 0, 8));
+
     // Execute our AppRun
     var apprun = std.process.Child.init(&[_][]const u8{"./AppRun"}, a);
     try apprun.spawn();
@@ -102,5 +89,44 @@ pub fn main() !void {
 
     // Remove the temp dir
     try std.process.changeCurDir("/tmp");
-    try std.fs.cwd().deleteTree(tmpdir_real);
+    //try std.fs.cwd().deleteTree(tmpdir_real);
+}
+
+// Extract a tar.xz under a directory
+// file is the literal file contents
+fn txz(a: std.mem.Allocator, file: []const u8, outdirname: []const u8) !void {
+    var fbs = std.io.fixedBufferStream(file);
+    var reader = std.io.bufferedReader(fbs.reader());
+
+    var decompressed = try std.compress.xz.decompress(a, reader.reader());
+    defer decompressed.deinit();
+
+    var outdir = try std.fs.cwd().openDir(outdirname, .{});
+    defer outdir.close();
+
+    try std.tar.pipeToFileSystem(outdir, decompressed.reader(), .{ .mode_mode = .ignore });
+}
+
+fn recurse_chmod(a: std.mem.Allocator, mode: c_ulong) !void {
+    var dir = try std.fs.cwd().openDir(".", .{ .iterate = true });
+    defer dir.close();
+
+    var dirIterator = dir.iterate();
+    while (try dirIterator.next()) |dirContent| {
+        if (dirContent.kind == .directory) {
+            // set the current dir to the subdir
+            var subdir = try std.fs.cwd().openDir(dirContent.name, .{});
+            defer subdir.close();
+            try subdir.setAsCwd();
+            // recurse
+            try recurse_chmod(a, mode);
+            // re-set the cwd
+            try dir.setAsCwd();
+        } else {
+            // chmod +x
+            const name = try std.fmt.allocPrintZ(a, "{s}", .{dirContent.name});
+            defer a.free(name);
+            _ = std.c.chmod(name, mode);
+        }
+    }
 }
