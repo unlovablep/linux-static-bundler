@@ -1,9 +1,9 @@
 LIBS=usr/lib/libc.so.6 usr/lib64/ld-linux-x86-64.so.2
 LIBDIRS=usr/lib usr/lib64
 
-../App.zip: sh $(LIBS) usr/bin/main
+../src/App.txz: sh $(LIBS) usr/bin/main
 	chmod +x AppRun
-	zip -9 -r ../src/App.zip ./ -x "src/*" "Makefile"
+	tar -Jcf ../src/App.txz ./
 $(LIBDIRS):
 	mkdir -p "$@"
 $(LIBS): $(LIBDIRS)
