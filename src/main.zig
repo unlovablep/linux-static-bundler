@@ -89,7 +89,7 @@ pub fn main() !void {
 
     // Remove the temp dir
     try std.process.changeCurDir("/tmp");
-    //try std.fs.cwd().deleteTree(tmpdir_real);
+    try std.fs.cwd().deleteTree(tmpdir_real);
 }
 
 // Extract a tar.xz under a directory
